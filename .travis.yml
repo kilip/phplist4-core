@@ -12,9 +12,16 @@ env:
   global:
   - PHPLIST_DATABASE_NAME=phplist PHPLIST_DATABASE_USER=travis PHPLIST_DATABASE_PASSWORD=''
   matrix:
-  - DEPENDENCIES=latest
-  - DEPENDENCIES=latest COVERAGE=yes
-  - DEPENDENCIES=oldest
+    include:
+      - DEPENDENCIES=latest
+      - DEPENDENCIES=oldest
+      - DEPENDENCIES=latest COVERAGE=yes
+    exclude:
+      - php: 7.1
+        env: DEPENDENCIES=latest COVERAGE=yes
+      - php: 7.2
+        env: DEPENDENCIES=latest COVERAGE=yes
+
 
 notifications:
   slack:
@@ -31,7 +38,11 @@ cache:
   - "$HOME/.composer/cache"
 
 before_install:
-- phpenv config-rm xdebug.ini
+- >
+  if [[ $COVERAGE != yes ]]; then
+    phpenv config-rm xdebug.ini;
+  fi;
+
 - >
   echo;
   echo "Creating the database and importing the database schema";
