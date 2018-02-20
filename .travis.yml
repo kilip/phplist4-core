@@ -13,6 +13,7 @@ env:
   - PHPLIST_DATABASE_NAME=phplist PHPLIST_DATABASE_USER=travis PHPLIST_DATABASE_PASSWORD=''
   matrix:
   - DEPENDENCIES=latest
+  - DEPENDENCIES=latest COVERAGE=yes
   - DEPENDENCIES=oldest
 
 notifications:
@@ -50,6 +51,12 @@ install:
   fi;
   composer show;
 
+# setup
+- >
+  if [[ $COVERAGE = yes ]]; then
+    export PHPUNIT_OPTIONS="--coverage-clover=/tmp/coverage.clover";
+  fi;
+
 script:
 - >
   echo;
@@ -64,17 +71,7 @@ script:
 - >
   echo;
   echo "Running the unit tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Unit/;
-
-- >
-  echo;
-  echo "Running the integration tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Integration/;
-
-- >
-  echo;
-  echo "Running the system tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/System/;
+  vendor/bin/phpunit $PHPUNIT_OPTIONS
 
 - >
   echo;
@@ -90,3 +87,11 @@ script:
   echo;
   echo "Running PHP_CodeSniffer";
   vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ public/;
+
+after_script:
+# setup
+- >
+  if [[ $COVERAGE = yes ]]; then
+    wget https://scrutinizer-ci.com/ocular.phar;
+    php ocular.phar code-coverage:upload --access-token="$SCRUTINIZER_TOKEN" --format=php-clover /tmp/coverage.clover
+  fi;
