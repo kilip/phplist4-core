@@ -12,10 +12,9 @@ env:
   global:
   - PHPLIST_DATABASE_NAME=phplist PHPLIST_DATABASE_USER=travis PHPLIST_DATABASE_PASSWORD=''
   matrix:
-    include:
-      - DEPENDENCIES=latest
-      - DEPENDENCIES=oldest
-      - DEPENDENCIES=latest COVERAGE=yes
+    - DEPENDENCIES=latest
+    - DEPENDENCIES=oldest
+    - DEPENDENCIES=latest COVERAGE=yes
     exclude:
       - php: 7.1
         env: DEPENDENCIES=latest COVERAGE=yes
