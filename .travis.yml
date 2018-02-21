@@ -11,12 +11,10 @@ services:
 env:
   global:
   - PHPLIST_DATABASE_NAME=phplist PHPLIST_DATABASE_USER=travis PHPLIST_DATABASE_PASSWORD=''
-  matrix:
-    - DEPENDENCIES=latest
-    - DEPENDENCIES=oldest
-    include:
-      - php: '7.2'
-        env: DEPENDENCIES=latest COVERAGE=yes
+
+matrix:
+  - DEPENDENCIES=latest
+  - DEPENDENCIES=oldest
 
 notifications:
   slack:
