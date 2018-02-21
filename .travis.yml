@@ -36,6 +36,7 @@ before_install:
 - >
   if [[ $DEPENDENCIES = "latest" && ${TRAVIS_PHP_VERSION:0:3} = "7.2" ]]; then
     export PHPUNIT_OPTIONS="--coverage-clover=/tmp/clover.clover";
+    export COVERAGE=yes
   else
     phpenv config-rm xdebug.ini;
   fi;
