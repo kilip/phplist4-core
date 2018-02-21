@@ -11,10 +11,11 @@ services:
 env:
   global:
   - PHPLIST_DATABASE_NAME=phplist PHPLIST_DATABASE_USER=travis PHPLIST_DATABASE_PASSWORD=''
+  - COVERAGE=no
 
-matrix:
-  - DEPENDENCIES=latest
-  - DEPENDENCIES=oldest
+  matrix:
+    - DEPENDENCIES=latest
+    - DEPENDENCIES=oldest
 
 notifications:
   slack:
@@ -31,7 +32,14 @@ cache:
   - "$HOME/.composer/cache"
 
 before_install:
-- phpenv config-rm xdebug.ini
+- >
+  if [[ $DEPENDENCIES = "latest" && ${TRAVIS_PHP_VERSION:0:3} = "7.2" ]]; then
+    mkdir -p build/logs;
+    export PHPUNIT_OPTIONS="--coverage-xml=build/logs/clover.xml";
+  else
+    phpenv config-rm xdebug.ini;
+  fi;
+
 - >
   echo;
   echo "Creating the database and importing the database schema";
@@ -65,17 +73,7 @@ script:
 - >
   echo;
   echo "Running the unit tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Unit/;
-
-- >
-  echo;
-  echo "Running the integration tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/Integration/;
-
-- >
-  echo;
-  echo "Running the system tests";
-  vendor/bin/phpunit -c Configuration/PHPUnit/phpunit.xml tests/System/;
+  vendor/bin/phpunit $PHPUNIT_OPTIONS;
 
 - >
   echo;
