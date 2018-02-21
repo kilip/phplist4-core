@@ -12,10 +12,11 @@ env:
   global:
   - PHPLIST_DATABASE_NAME=phplist PHPLIST_DATABASE_USER=travis PHPLIST_DATABASE_PASSWORD=''
   - COVERAGE=no
-
   matrix:
     - DEPENDENCIES=latest
     - DEPENDENCIES=oldest
+  # scrutinizer token
+  secure: "R+svO4d0Bg/zPHHQ0sBvTlM5jyDBtnhM6u8AgJyWP1kSOYlwJqOaHsShCZYE+hNt9efkxGu92k8Op9NF7EyqQjtp4Y2Ys/pL+GLJ7T2Fzn3YT799I/VepqWG6lBOfOdi1NH7S3glzacZbTahhFNY5cjgCjBIaoQIgBiHqAOkl08="
 
 notifications:
   slack:
@@ -34,8 +35,7 @@ cache:
 before_install:
 - >
   if [[ $DEPENDENCIES = "latest" && ${TRAVIS_PHP_VERSION:0:3} = "7.2" ]]; then
-    mkdir -p build/logs;
-    export PHPUNIT_OPTIONS="--coverage-xml=build/logs/clover.xml";
+    export PHPUNIT_OPTIONS="--coverage-clover=/tmp/clover.clover";
   else
     phpenv config-rm xdebug.ini;
   fi;
@@ -89,3 +89,13 @@ script:
   echo;
   echo "Running PHP_CodeSniffer";
   vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ public/;
+
+
+# only process coverage after success
+after_success:
+# setup
+- >
+  if [[ $COVERAGE = yes ]]; then
+    wget https://scrutinizer-ci.com/ocular.phar;
+    php ocular.phar code-coverage:upload --access-token="$SCRUTINIZER_TOKEN" --format=php-clover /tmp/coverage.clover
+  fi;
