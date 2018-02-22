@@ -18,7 +18,7 @@ env:
 matrix:
   include:
   - php: '7.2'
-    env: COVERAGE=yes DEPENDENCIES=latest COVERAGE_PATH=/tmp/coverage
+    env: COVERAGE=yes DEPENDENCIES=latest
 
 notifications:
   slack:
@@ -37,8 +37,7 @@ cache:
 before_install:
 - >
   if [[ $COVERAGE=yes ]]; then
-    mkdir -p $COVERAGE_PATH;
-    export PHPUNIT_OPTIONS="--coverage-clover=$COVERAGE_PATH/coverage.clover";
+    export PHPUNIT_OPTIONS="--coverage-clover=/tmp/coverage.clover";
   else
     phpenv config-rm xdebug.ini;
   fi;
@@ -93,11 +92,9 @@ script:
   echo "Running PHP_CodeSniffer";
   vendor/bin/phpcs --standard=Configuration/PhpCodeSniffer/ bin/ src/ tests/ public/;
 
-
-# only process coverage after success
 after_script:
 - >
   if [[ $COVERAGE = yes ]]; then
     wget https://scrutinizer-ci.com/ocular.phar;
-    php ocular.phar code-coverage:upload --format=php-clover $COVERAGE_PATH/*.clover
+    php ocular.phar code-coverage:upload --format=php-clover /tmp/coverage.clover
   fi;
