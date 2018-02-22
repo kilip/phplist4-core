@@ -99,5 +99,5 @@ after_script:
 - >
   if [[ $COVERAGE = yes ]]; then
     wget https://scrutinizer-ci.com/ocular.phar;
-    php ocular.phar code-coverage:upload --format=php-clover /tmp/coverage.clover
+    php ocular.phar code-coverage:upload --format=php-clover $COVERAGE_PATH/*.clover
   fi;
