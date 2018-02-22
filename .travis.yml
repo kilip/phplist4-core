@@ -11,7 +11,6 @@ services:
 env:
   global:
   - PHPLIST_DATABASE_NAME=phplist PHPLIST_DATABASE_USER=travis PHPLIST_DATABASE_PASSWORD=''
-  - COVERAGE=no
   matrix:
   - DEPENDENCIES=latest
   - DEPENDENCIES=oldest
@@ -19,7 +18,7 @@ env:
 matrix:
   include:
   - php: '7.2'
-    env: COVERAGE=yes DEPENDENCIES=latest
+    env: COVERAGE=yes DEPENDENCIES=latest COVERAGE_PATH=/tmp/coverage
 
 notifications:
   slack:
@@ -37,9 +36,9 @@ cache:
 
 before_install:
 - >
-  if [[ $DEPENDENCIES = "latest" && ${TRAVIS_PHP_VERSION:0:3} = "7.2" ]]; then
-    export PHPUNIT_OPTIONS="--coverage-clover=/tmp/coverage.clover";
-    export COVERAGE=yes
+  if [[ $COVERAGE=yes ]]; then
+    mkdir -p $COVERAGE_PATH;
+    export PHPUNIT_OPTIONS="--coverage-clover=$COVERAGE_PATH/coverage.clover";
   else
     phpenv config-rm xdebug.ini;
   fi;
@@ -76,7 +75,7 @@ script:
 
 - >
   echo;
-  echo "Running the unit tests";
+  echo "Running PHPUnit tests";
   vendor/bin/phpunit $PHPUNIT_OPTIONS;
 
 - >
@@ -97,7 +96,6 @@ script:
 
 # only process coverage after success
 after_script:
-# setup
 - >
   if [[ $COVERAGE = yes ]]; then
     wget https://scrutinizer-ci.com/ocular.phar;
