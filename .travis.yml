@@ -13,10 +13,13 @@ env:
   - PHPLIST_DATABASE_NAME=phplist PHPLIST_DATABASE_USER=travis PHPLIST_DATABASE_PASSWORD=''
   - COVERAGE=no
   matrix:
-    - DEPENDENCIES=latest
-    - DEPENDENCIES=oldest
-  # scrutinizer token
-  secure: "R+svO4d0Bg/zPHHQ0sBvTlM5jyDBtnhM6u8AgJyWP1kSOYlwJqOaHsShCZYE+hNt9efkxGu92k8Op9NF7EyqQjtp4Y2Ys/pL+GLJ7T2Fzn3YT799I/VepqWG6lBOfOdi1NH7S3glzacZbTahhFNY5cjgCjBIaoQIgBiHqAOkl08="
+  - DEPENDENCIES=latest
+  - DEPENDENCIES=oldest
+
+matrix:
+  include:
+  - php: '7.2'
+    env: COVERAGE=yes DEPENDENCIES=latest
 
 notifications:
   slack:
@@ -35,7 +38,7 @@ cache:
 before_install:
 - >
   if [[ $DEPENDENCIES = "latest" && ${TRAVIS_PHP_VERSION:0:3} = "7.2" ]]; then
-    export PHPUNIT_OPTIONS="--coverage-clover=/tmp/clover.clover";
+    export PHPUNIT_OPTIONS="--coverage-clover=/tmp/coverage.clover";
     export COVERAGE=yes
   else
     phpenv config-rm xdebug.ini;
@@ -93,10 +96,10 @@ script:
 
 
 # only process coverage after success
-after_success:
+after_script:
 # setup
 - >
   if [[ $COVERAGE = yes ]]; then
     wget https://scrutinizer-ci.com/ocular.phar;
-    php ocular.phar code-coverage:upload --access-token="$SCRUTINIZER_TOKEN" --format=php-clover /tmp/coverage.clover
+    php ocular.phar code-coverage:upload --format=php-clover /tmp/coverage.clover
   fi;
